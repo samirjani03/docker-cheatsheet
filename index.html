@@ -1,0 +1,1590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🐳 Docker Complete Cheatsheet — The Only Reference You'll Need</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1c2333;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text2: #8b949e;
+    --accent: #58a6ff;
+    --accent2: #3fb950;
+    --accent3: #f0883e;
+    --danger: #f85149;
+    --code-bg: #0d1117;
+    --cmt: #8b949e;
+    --cmd: #79c0ff;
+    --str: #a5d6ff;
+    --flag: #ffa657;
+    --val: #7ee787;
+    --radius: 8px;
+    --shadow: 0 2px 8px rgba(0,0,0,.4);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* ── SIDEBAR ── */
+  nav {
+    width: 260px;
+    min-width: 260px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 20px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    z-index: 10;
+  }
+  nav h2 {
+    font-size: 1.1rem;
+    color: var(--accent);
+    margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  nav a {
+    display: block;
+    color: var(--text2);
+    text-decoration: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    transition: all .15s;
+    margin-bottom: 1px;
+  }
+  nav a:hover, nav a.active {
+    color: var(--accent);
+    background: var(--surface2);
+  }
+  nav a.l1 { padding-left: 22px; font-size: 0.8rem; }
+  nav .divider {
+    border-top: 1px solid var(--border);
+    margin: 10px 0;
+  }
+
+  /* ── MAIN ── */
+  main {
+    flex: 1;
+    padding: 30px 40px;
+    max-width: 900px;
+    overflow-x: hidden;
+  }
+  h1 {
+    font-size: 2rem;
+    margin-bottom: 8px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  h2 {
+    font-size: 1.4rem;
+    margin: 40px 0 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    color: var(--accent);
+  }
+  h3 {
+    font-size: 1.1rem;
+    margin: 24px 0 10px;
+    color: var(--accent2);
+  }
+  h4 {
+    font-size: 0.95rem;
+    margin: 16px 0 8px;
+    color: var(--text);
+  }
+
+  /* ── SEARCH ── */
+  .search-wrap {
+    position: sticky; top: 0; z-index: 5;
+    background: var(--bg);
+    padding: 12px 0 20px;
+    margin-bottom: 10px;
+  }
+  .search-wrap input {
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .search-wrap input:focus { border-color: var(--accent); }
+  .no-results { display: none; text-align: center; padding: 40px; color: var(--text2); }
+
+  /* ── CODE BLOCKS ── */
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    overflow-x: auto;
+    font-size: 0.85rem;
+    line-height: 1.55;
+    position: relative;
+    margin: 10px 0 16px;
+    font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+  }
+  pre code { font-family: inherit; }
+  .copy-btn {
+    position: absolute; top: 8px; right: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text2);
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity .15s;
+  }
+  pre:hover .copy-btn { opacity: 1; }
+  .copy-btn:hover { background: var(--surface2); color: var(--text); }
+  .copy-btn.copied { background: var(--accent2); border-color: var(--accent2); color: #000; }
+
+  /* ── TABLES ── */
+  .table-wrap { overflow-x: auto; margin: 10px 0 16px; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+  th, td {
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  th { color: var(--accent); font-weight: 600; background: var(--surface); }
+  td code { background: var(--surface); padding: 1px 5px; border-radius: 3px; font-size: 0.82rem; }
+
+  /* ── CARDS ── */
+  .concept-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin: 10px 0 16px;
+  }
+  .concept-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+  }
+  .concept-card h4 { margin: 0 0 4px; color: var(--accent); }
+  .concept-card p { font-size: 0.82rem; color: var(--text2); margin: 0; }
+
+  /* ── TAGS ── */
+  .tag {
+    display: inline-block;
+    background: var(--surface2);
+    color: var(--accent);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    margin-right: 4px;
+  }
+  .tag.orange { color: var(--accent3); }
+  .tag.green { color: var(--accent2); }
+  .tag.red { color: var(--danger); }
+
+  /* ── MISC ── */
+  .note {
+    background: var(--surface);
+    border-left: 3px solid var(--accent);
+    padding: 12px 16px;
+    border-radius: 0 var(--radius) var(--radius) 0;
+    margin: 10px 0 16px;
+    font-size: 0.88rem;
+  }
+  .note.warn { border-left-color: var(--accent3); }
+  .note.danger { border-left-color: var(--danger); }
+  .highlight { background: rgba(88,166,255,.15); padding: 1px 3px; border-radius: 3px; }
+  .back-top {
+    position: fixed; bottom: 24px; right: 24px;
+    background: var(--surface); border: 1px solid var(--border);
+    color: var(--text); width: 40px; height: 40px;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 1.2rem; opacity: 0.5; transition: opacity .2s; z-index: 20;
+  }
+  .back-top:hover { opacity: 1; }
+  ul, ol { padding-left: 20px; margin: 6px 0 12px; }
+  li { margin-bottom: 3px; }
+  .section { scroll-margin-top: 80px; }
+  hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+  /* ── SYNTAX HIGHLIGHTING ── */
+  .hl-cmd { color: var(--cmd); }        /* docker, git, etc */
+  .hl-sub { color: var(--accent2); }     /* subcommand: run, build */
+  .hl-flg { color: var(--flag); }        /* --flag, -f */
+  .hl-val { color: var(--val); }         /* values, names */
+  .hl-cmt { color: var(--cmt); }         /* # comments */
+  .hl-str { color: var(--str); }         /* "strings" */
+
+  /* ── HAMBURGER MENU (visible on mobile/tablet) ── */
+  .hamburger {
+    display: none;
+    position: fixed; top: 12px; left: 12px; z-index: 100;
+    background: var(--surface); border: 1px solid var(--border);
+    color: var(--text); width: 40px; height: 40px; border-radius: 8px;
+    cursor: pointer; font-size: 1.4rem; align-items: center; justify-content: center;
+  }
+  .overlay { display: none; }
+  .overlay.active {
+    display: block; position: fixed; inset: 0; background: rgba(0,0,0,.6);
+    z-index: 49;
+  }
+
+  /* ── TABLET (769px - 1024px) ── */
+  @media (max-width: 1024px) {
+    nav { width: 220px; min-width: 220px; padding: 14px; }
+    main { padding: 20px 24px; max-width: 100%; }
+    h1 { font-size: 1.6rem; }
+    h2 { font-size: 1.25rem; }
+    pre { font-size: 0.8rem; padding: 12px; }
+    .concept-grid { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+    .copy-btn { opacity: 1; font-size: 0.7rem; padding: 3px 8px; }
+  }
+
+  /* ── MOBILE (max-width 768px) ── */
+  @media (max-width: 768px) {
+    body { flex-direction: column; padding-top: 0; }
+    .hamburger { display: flex; }
+
+    nav {
+      position: fixed; top: 0; left: -280px; width: 280px; min-width: 280px;
+      height: 100vh; max-height: 100vh; border-right: 1px solid var(--border);
+      border-bottom: none; z-index: 50; padding: 16px;
+      transition: left .25s ease; box-shadow: var(--shadow);
+    }
+    nav.open { left: 0; }
+    main { padding: 56px 14px 24px; max-width: 100%; }
+    h1 { font-size: 1.4rem; }
+    h2 { font-size: 1.15rem; }
+    h3 { font-size: 1rem; }
+    pre { font-size: 0.75rem; padding: 10px; border-radius: 6px; }
+    pre code { word-break: break-all; }
+    .concept-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+    .concept-card { padding: 10px; }
+    .copy-btn { opacity: 1; font-size: 0.7rem; padding: 3px 8px; top: 4px; right: 4px; }
+    table { font-size: 0.75rem; }
+    th, td { padding: 6px 8px; }
+    .search-wrap { top: 48px; padding: 8px 0 14px; }
+    .search-wrap input { padding: 10px 14px; font-size: 0.85rem; }
+    .note { font-size: 0.82rem; padding: 10px 12px; }
+    .back-top { bottom: 16px; right: 12px; width: 36px; height: 36px; font-size: 1rem; }
+    ul, ol { padding-left: 16px; }
+  }
+
+  /* ── SMALL MOBILE (max-width 480px) ── */
+  @media (max-width: 480px) {
+    nav { width: 260px; min-width: 260px; }
+    main { padding: 52px 10px 20px; }
+    h1 { font-size: 1.25rem; }
+    h2 { font-size: 1.05rem; }
+    pre { font-size: 0.7rem; padding: 8px; }
+    .concept-grid { grid-template-columns: 1fr; gap: 6px; }
+    table { font-size: 0.7rem; }
+    th, td { padding: 4px 6px; }
+    .table-wrap { margin: 6px 0 12px; }
+    .search-wrap input { padding: 8px 12px; font-size: 0.8rem; }
+    section { scroll-margin-top: 60px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════ HAMBURGER + OVERLAY ═══════════ -->
+<button class="hamburger" id="hamburger" aria-label="Menu" title="Menu">☰</button>
+<div class="overlay" id="overlay"></div>
+
+<!-- ═══════════ SIDEBAR ═══════════ -->
+<nav id="nav">
+  <h2>🐳 Docker Cheatsheet</h2>
+  <a href="#concepts">💡 Core Concepts</a>
+  <a href="#install">📥 Install</a>
+  <a href="#dockerfile">🏗️ Dockerfile</a>
+  <a href="#images">📦 Images</a>
+  <a href="#containers">🚀 Containers</a>
+  <a href="#compose">🐳 Compose</a>
+  <a href="#volumes">💾 Volumes</a>
+  <a href="#networks">🌐 Networks</a>
+  <a href="#registry">☁️ Registry</a>
+  <a href="#resources">⚙️ Resources & Limits</a>
+  <a href="#buildx">🏗️ Buildx</a>
+  <a href="#swarm">🐝 Swarm (basics)</a>
+  <a href="#cleanup">🧹 Cleanup</a>
+  <a href="#debug">🔍 Debug</a>
+  <a href="#dockerignore">📝 .dockerignore</a>
+  <a href="#quickref">⚡ Quick Ref</a>
+</nav>
+
+<!-- ═══════════ MAIN ═══════════ -->
+<main>
+<div class="search-wrap">
+  <input type="text" id="search" placeholder="🔍  Search any docker command, concept, or flag... (e.g. 'volume', 'compose up', 'inspect')" autofocus>
+</div>
+<div class="no-results" id="no-results">No matches found. Try a different search term.</div>
+
+<h1>🐳 Docker — The Complete Cheatsheet</h1>
+<p style="color:var(--text2); margin-bottom:30px;">
+  Every command, every flag, every use case. One page. No hunting through random blogs.<br>
+  <span class="tag">v2.0</span> <span class="tag green">Complete</span> <span class="tag orange">Beginner-Friendly</span>
+</p>
+
+<!-- ═══════════════════════════════════════ -->
+<section id="concepts" class="section">
+<h2>💡 Core Concepts (30 Seconds)</h2>
+<p>Docker packages your app + everything it needs into a <strong>container</strong> that runs identically everywhere — your laptop, a server, the cloud. No "works on my machine" nonsense.</p>
+<div class="concept-grid">
+  <div class="concept-card"><h4>🖼️ Image</h4><p>A read-only blueprint / recipe. Built from a Dockerfile. Stored in layers.</p></div>
+  <div class="concept-card"><h4>📦 Container</h4><p>A running instance of an image. Isolated process with its own filesystem.</p></div>
+  <div class="concept-card"><h4>📝 Dockerfile</h4><p>Text file with build instructions. Think of it as a shell script for building images.</p></div>
+  <div class="concept-card"><h4>💾 Volume</h4><p>Persistent storage that survives container deletion. A shared fridge for your data.</p></div>
+  <div class="concept-card"><h4>🌐 Network</h4><p>Virtual wiring — how containers find and talk to each other.</p></div>
+  <div class="concept-card"><h4>☁️ Registry</h4><p>Image storage & distribution. Docker Hub is the default public one.</p></div>
+</div>
+<div class="table-wrap">
+<table>
+  <tr><th>Concept</th><th>Real-World Analogy</th><th>CLI Object</th></tr>
+  <tr><td>Image</td><td>Recipe (read-only)</td><td><code>docker image</code></td></tr>
+  <tr><td>Container</td><td>Dish made from the recipe</td><td><code>docker container</code></td></tr>
+  <tr><td>Dockerfile</td><td>Written recipe instructions</td><td><code>docker build</code></td></tr>
+  <tr><td>Volume</td><td>Shared fridge (data survives dishes)</td><td><code>docker volume</code></td></tr>
+  <tr><td>Network</td><td>Kitchen wiring</td><td><code>docker network</code></td></tr>
+  <tr><td>Registry</td><td>Cookbook library (Docker Hub)</td><td><code>docker pull/push</code></td></tr>
+</table>
+</div>
+
+<h3>🔧 Docker Architecture</h3>
+<pre><code><span class="hl-cmt"># Docker uses a client-server architecture:</span>
+
+<span class="hl-cmt"># DOCKER CLIENT (docker CLI)</span>
+<span class="hl-cmt">#     ↓  sends commands via REST API</span>
+<span class="hl-cmt"># DOCKER DAEMON (dockerd)</span>
+<span class="hl-cmt">#     ↓  manages images, containers, networks, volumes</span>
+<span class="hl-cmt"># CONTAINERD (containerd)</span>
+<span class="hl-cmt">#     ↓  manages container lifecycle</span>
+<span class="hl-cmt"># RUNSC (runc)</span>
+<span class="hl-cmt">#     ↓  actually creates & runs the container</span>
+<span class="hl-cmt"># CONTAINER</span></code></pre>
+</section>
+
+<!-- ═══════════════════════════════════════ -->
+<section id="install" class="section">
+<h2>📥 Installation</h2>
+<h3>Linux (Ubuntu/Debian — recommended way)</h3>
+<pre><code><span class="hl-cmt"># Official convenience script</span>
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+
+<span class="hl-cmt"># Add your user to docker group (no sudo needed after relogin)</span>
+sudo usermod -aG docker $USER
+newgrp docker  <span class="hl-cmt"># or log out and back in</span>
+
+<span class="hl-cmt"># Verify</span>
+docker --version
+docker run hello-world</code></pre>
+
+<h3>macOS</h3>
+<pre><code><span class="hl-cmt"># Download Docker Desktop from:</span>
+<span class="hl-cmt"># https://www.docker.com/products/docker-desktop/</span>
+<span class="hl-cmt"># Or via Homebrew:</span>
+brew install --cask docker</code></pre>
+
+<h3>Windows</h3>
+<pre><code><span class="hl-cmt"># Download Docker Desktop from docker.com</span>
+<span class="hl-cmt"># Requires WSL 2 backend for best performance</span>
+wsl --install  <span class="hl-cmt"># Enable WSL 2 first if needed</span></code></pre>
+</section>
+
+<!-- ═══════════════════════════════════════ -->
+<section id="dockerfile" class="section">
+<h2>🏗️ Dockerfile — Complete Reference</h2>
+<p>A Dockerfile is a plain text file named <code>Dockerfile</code> (no extension). Each instruction creates a layer.</p>
+
+<h3>Complete Dockerfile Example</h3>
+<pre><code><span class="hl-cmt"># ── Production-grade Node.js Dockerfile ──</span>
+<span class="hl-cmt"># Stage 1: Build</span>
+FROM node:20-alpine AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+COPY . .
+RUN npm run build
+
+<span class="hl-cmt"># Stage 2: Run (smaller final image)</span>
+FROM node:20-alpine
+WORKDIR /app
+RUN addgroup -S app && adduser -S app -G app
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./
+EXPOSE 3000
+ENV NODE_ENV=production
+USER app
+HEALTHCHECK --interval=30s --timeout=3s --retries=3 \
+  CMD wget -qO- http://localhost:3000/health || exit 1
+CMD ["node", "dist/server.js"]</code></pre>
+
+<h3>Every Dockerfile Instruction</h3>
+<div class="table-wrap">
+<table>
+  <tr><th>Instruction</th><th>Purpose</th><th>Example</th></tr>
+  <tr><td><code>FROM</code></td><td>Base image (must be first)</td><td><code>FROM node:20-alpine</code></td></tr>
+  <tr><td><code>FROM ... AS</code></td><td>Name a build stage</td><td><code>FROM golang:1.21 AS builder</code></td></tr>
+  <tr><td><code>RUN</code></td><td>Execute commands during build</td><td><code>RUN apt-get update && apt-get install -y curl</code></td></tr>
+  <tr><td><code>COPY</code></td><td>Copy files from host to image</td><td><code>COPY . /app</code></td></tr>
+  <tr><td><code>COPY --from</code></td><td>Copy from another stage</td><td><code>COPY --from=builder /app/bin /app/bin</code></td></tr>
+  <tr><td><code>ADD</code></td><td>Copy + auto-extract tar/zip</td><td><code>ADD archive.tar.gz /app</code></td></tr>
+  <tr><td><code>WORKDIR</code></td><td>Set working directory</td><td><code>WORKDIR /app</code></td></tr>
+  <tr><td><code>ENV</code></td><td>Set environment variable</td><td><code>ENV NODE_ENV=production</code></td></tr>
+  <tr><td><code>ARG</code></td><td>Build-time variable only</td><td><code>ARG VERSION=1.0</code></td></tr>
+  <tr><td><code>EXPOSE</code></td><td>Document port (doesn't publish it)</td><td><code>EXPOSE 8080</code></td></tr>
+  <tr><td><code>VOLUME</code></td><td>Create a mount point</td><td><code>VOLUME /data</code></td></tr>
+  <tr><td><code>USER</code></td><td>Switch user</td><td><code>USER node</code></td></tr>
+  <tr><td><code>CMD</code></td><td>Default command (overridable)</td><td><code>CMD ["node", "server.js"]</code></td></tr>
+  <tr><td><code>ENTRYPOINT</code></td><td>Fixed command (CMD becomes args)</td><td><code>ENTRYPOINT ["python", "app.py"]</code></td></tr>
+  <tr><td><code>HEALTHCHECK</code></td><td>Container health check</td><td><code>HEALTHCHECK CMD curl -f localhost:3000/health</code></td></tr>
+  <tr><td><code>ONBUILD</code></td><td>Trigger for child images</td><td><code>ONBUILD COPY . /app</code></td></tr>
+  <tr><td><code>STOPSIGNAL</code></td><td>Signal to stop container</td><td><code>STOPSIGNAL SIGTERM</code></td></tr>
+  <tr><td><code>SHELL</code></td><td>Change default shell</td><td><code>SHELL ["/bin/bash", "-c"]</code></td></tr>
+  <tr><td><code>LABEL</code></td><td>Add metadata</td><td><code>LABEL maintainer="samir@example.com"</code></td></tr>
+</table>
+</div>
+
+<h3>CMD vs ENTRYPOINT (critical distinction)</h3>
+<pre><code><span class="hl-cmt"># CMD: default command, fully overridable</span>
+CMD ["echo", "hello"]
+<span class="hl-cmt"># docker run myimg           → "hello"</span>
+<span class="hl-cmt"># docker run myimg world     → "world" (CMD replaced entirely)</span>
+
+<span class="hl-cmt"># ENTRYPOINT: fixed command, CMD is appended as arguments</span>
+ENTRYPOINT ["echo"]
+CMD ["hello"]
+<span class="hl-cmt"># docker run myimg           → "hello" (ENTRYPOINT + CMD)</span>
+<span class="hl-cmt"># docker run myimg world     → "world" (ENTRYPOINT + override)</span>
+
+<span class="hl-cmt"># ENTRYPOINT + CMD together (best practice)</span>
+ENTRYPOINT ["docker-entrypoint.sh"]
+CMD ["node", "server.js"]
+<span class="hl-cmt"># docker run myimg              → docker-entrypoint.sh node server.js</span>
+<span class="hl-cmt"># docker run myimg npm test     → docker-entrypoint.sh npm test</span>
+
+<span class="hl-cmt"># Override ENTRYPOINT at runtime:</span>
+docker run --entrypoint /bin/bash myimg</code></pre>
+
+<h3>HEALTHCHECK</h3>
+<pre><code><span class="hl-cmt"># Options: --interval=DURATION (default 30s)</span>
+<span class="hl-cmt">#          --timeout=DURATION   (default 30s)</span>
+<span class="hl-cmt">#          --start-period=DURATION (grace period)</span>
+<span class="hl-cmt">#          --retries=N          (default 3)</span>
+
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:3000/health || exit 1
+
+<span class="hl-cmt"># NONE = disable inherited healthcheck</span>
+HEALTHCHECK NONE</code></pre>
+
+<h3>Dockerfile Best Practices</h3>
+<div class="table-wrap">
+<table>
+  <tr><th>✅ Do</th><th>❌ Don't</th></tr>
+  <tr><td>Pin specific tags: <code>node:20-alpine</code></td><td>Use <code>:latest</code> in production</td></tr>
+  <tr><td>Multi-stage builds for small images</td><td>Ship build tools in final image</td></tr>
+  <tr><td>COPY package.json → RUN install → COPY rest</td><td>COPY everything then install (kills cache)</td></tr>
+  <tr><td>Combine RUN commands: <code>RUN a && b && c</code></td><td>Separate RUN per package (bloats layers)</td></tr>
+  <tr><td>Use <code>.dockerignore</code> file</td><td>COPY node_modules, .git, logs</td></tr>
+  <tr><td>Run as non-root USER</td><td>Run containers as root in production</td></tr>
+  <tr><td>Use <code>COPY</code> (explicit)</td><td>Use <code>ADD</code> unless you need tar extraction</td></tr>
+  <tr><td>Clean up in same RUN: <code>apt install && rm -rf /var/lib/apt/lists/*</code></td><td>Clean in separate RUN (layer still holds data)</td></tr>
+</table>
+</div>
+</section>
+
+<!-- ═══════════════════════════════════════ -->
+<section id="images" class="section">
+<h2>📦 Image Commands</h2>
+
+<h3>Building Images</h3>
+<pre><code><span class="hl-cmt"># Basic build</span>
+docker build -t myapp:latest .                    <span class="hl-cmt"># -t = tag, . = context dir</span>
+docker build -t myapp:v1.0 -t myapp:latest .      <span class="hl-cmt"># multiple tags</span>
+
+<span class="hl-cmt"># Build with build args</span>
+docker build --build-arg VERSION=2.0 -t myapp:2.0 .
+
+<span class="hl-cmt"># Build from specific Dockerfile</span>
+docker build -f Dockerfile.prod -t myapp:prod .
+
+<span class="hl-cmt"># No cache (force full rebuild)</span>
+docker build --no-cache -t myapp:latest .
+
+<span class="hl-cmt"># Build and tag for registry</span>
+docker build -t samir/myapp:v1.0 .
+docker build -t ghcr.io/samir/myapp:v1.0 .        <span class="hl-cmt"># GitHub Container Registry</span></code></pre>
+
+<h3>Listing & Inspecting</h3>
+<pre><code>docker images                                      <span class="hl-cmt"># list all images</span>
+docker image ls                                    <span class="hl-cmt"># same thing</span>
+docker images -a                                   <span class="hl-cmt"># include intermediate layers</span>
+docker images --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}"
+docker image ls -f dangling=true                   <span class="hl-cmt"># show untagged (&lt;none&gt;) images only</span>
+docker image ls -f "reference=myapp*"              <span class="hl-cmt"># filter by name</span>
+
+docker image inspect nginx:latest                  <span class="hl-cmt"># full JSON metadata</span>
+docker image inspect -f '{{.Os}}' nginx:latest     <span class="hl-cmt"># extract one field</span>
+docker history nginx:latest                        <span class="hl-cmt"># see layer history & sizes</span>
+docker history --no-trunc nginx:latest             <span class="hl-cmt"># full command for each layer</span></code></pre>
+
+<h3>Tagging & Renaming</h3>
+<pre><code>docker tag SOURCE_IMAGE[:TAG] TARGET_IMAGE[:TAG]
+docker tag myapp:latest samir/myapp:v1.0
+docker tag abc123 samir/myapp:latest               <span class="hl-cmt"># tag by image ID</span></code></pre>
+
+<h3>Removing Images</h3>
+<pre><code>docker rmi nginx:latest                            <span class="hl-cmt"># remove by name:tag</span>
+docker rmi abc123def456                            <span class="hl-cmt"># remove by image ID</span>
+docker rmi -f abc123                               <span class="hl-cmt"># force remove (even if in use)</span>
+docker image prune                                 <span class="hl-cmt"># remove dangling (&lt;none&gt;) images</span>
+docker image prune -a                              <span class="hl-cmt"># remove ALL unused images</span>
+docker image prune -a --filter "until=24h"         <span class="hl-cmt"># unused older than 24h</span></code></pre>
+
+<h3>Saving & Loading (offline transfer)</h3>
+<pre><code>docker save -o myimage.tar myapp:latest            <span class="hl-cmt"># export image as tar</span>
+docker save myapp:latest | gzip > myimage.tar.gz   <span class="hl-cmt"># compressed</span>
+docker load -i myimage.tar                         <span class="hl-cmt"># import from tar</span>
+docker load < myimage.tar.gz                       <span class="hl-cmt"># import compressed</span>
+
+<span class="hl-cmt"># NOTE: save/load preserves layers & metadata. For flat filesystem use export.</span></code></pre>
+
+<h3>Commit (create image from container)</h3>
+<pre><code>docker commit mycontainer myimage:v2               <span class="hl-cmt"># snapshot container → image</span>
+docker commit -m "added nginx config" -a "Samir" mycontainer myimage:v2
+<span class="hl-cmt"># ⚠️ Prefer Dockerfiles over commit — commits are opaque and unreproducible.</span></code></pre>
+
+<h3>Import/Export (flat filesystem)</h3>
+<pre><code>docker export mycontainer > mycontainer.tar        <span class="hl-cmt"># flat FS export (no layers/history)</span>
+docker import mycontainer.tar myimage:flat         <span class="hl-cmt"># import flat FS as image</span>
+<span class="hl-cmt"># export/import loses metadata. Use save/load to preserve layers & history.</span></code></pre>
+</section>
+
+<!-- ═══════════════════════════════════════ -->
+<section id="containers" class="section">
+<h2>🚀 Container Commands</h2>
+
+<h3>docker run — The Swiss Army Knife</h3>
+<pre><code><span class="hl-cmt"># ── Basic patterns ──</span>
+docker run nginx                                  <span class="hl-cmt"># run, attach, Ctrl+C to stop</span>
+docker run -d nginx                               <span class="hl-cmt"># detached (background)</span>
+docker run --name myweb nginx                     <span class="hl-cmt"># give it a name</span>
+docker run --rm nginx                             <span class="hl-cmt"># auto-remove on stop</span>
+docker run -it ubuntu bash                        <span class="hl-cmt"># interactive + TTY</span>
+
+<span class="hl-cmt"># ── Port mapping (-p HOST:CONTAINER) ──</span>
+docker run -p 8080:80 nginx                       <span class="hl-cmt"># host 8080 → container 80</span>
+docker run -p 3000:3000 -p 9229:9229 myapp        <span class="hl-cmt"># multiple ports</span>
+docker run -p 127.0.0.1:8080:80 nginx             <span class="hl-cmt"># only localhost</span>
+docker run -P nginx                               <span class="hl-cmt"># publish all EXPOSE'd ports to random host ports</span>
+
+<span class="hl-cmt"># ── Volumes (-v / --mount) ──</span>
+docker run -v /host/path:/container/path nginx    <span class="hl-cmt"># bind mount</span>
+docker run -v myvolume:/data nginx                <span class="hl-cmt"># named volume</span>
+docker run -v /container/path nginx               <span class="hl-cmt"># anonymous volume</span>
+docker run --mount type=bind,src=/host,dst=/app nginx   <span class="hl-cmt"># verbose syntax</span>
+docker run --mount type=volume,src=mydata,dst=/data nginx
+
+<span class="hl-cmt"># ── Environment variables (-e / --env-file) ──</span>
+docker run -e MY_VAR=hello nginx
+docker run -e DB_HOST=db -e DB_PORT=5432 nginx    <span class="hl-cmt"># multiple</span>
+docker run --env-file .env.prod myapp             <span class="hl-cmt"># load from file</span>
+
+<span class="hl-cmt"># ── Resource limits ──</span>
+docker run --memory="256m" nginx                  <span class="hl-cmt"># RAM limit</span>
+docker run --memory="256m" --memory-swap="512m" nginx
+docker run --cpus="1.5" nginx                     <span class="hl-cmt"># 1.5 CPU cores</span>
+docker run --cpuset-cpus="0-2" nginx              <span class="hl-cmt"># pin to CPU cores 0,1,2</span>
+docker run --shm-size="256m" nginx                <span class="hl-cmt"># /dev/shm size (important for browsers, DBs)</span>
+
+<span class="hl-cmt"># ── Restart policies ──</span>
+docker run --restart=no nginx                     <span class="hl-cmt"># default: never restart</span>
+docker run --restart=always nginx                 <span class="hl-cmt"># always restart (even after docker restart)</span>
+docker run --restart=unless-stopped nginx         <span class="hl-cmt"># restart unless explicitly stopped</span>
+docker run --restart=on-failure nginx             <span class="hl-cmt"># restart only on non-zero exit</span>
+docker run --restart=on-failure:5 nginx           <span class="hl-cmt"># max 5 retries</span>
+
+<span class="hl-cmt"># ── Other useful flags ──</span>
+docker run --init nginx                           <span class="hl-cmt"># use tini init (handles zombie processes)</span>
+docker run --dns 8.8.8.8 nginx                    <span class="hl-cmt"># custom DNS</span>
+docker run --add-host myhost:192.168.1.5 nginx    <span class="hl-cmt"># add /etc/hosts entry</span>
+docker run -h myhostname nginx                    <span class="hl-cmt"># set hostname</span>
+docker run --privileged nginx                     <span class="hl-cmt"># full host access (⚠️ security risk)</span>
+docker run --cap-add=NET_ADMIN nginx              <span class="hl-cmt"># add specific capability</span>
+docker run --cap-drop=ALL nginx                   <span class="hl-cmt"># drop all, add back selectively</span>
+docker run --read-only nginx                      <span class="hl-cmt"># read-only root filesystem</span>
+docker run --tmpfs /tmp:rw,noexec,nosuid nginx    <span class="hl-cmt"># tmpfs mount</span>
+docker run -u 1000:1000 nginx                     <span class="hl-cmt"># run as specific user:group</span>
+docker run --log-driver json-file --log-opt max-size=10m nginx</code></pre>
+
+<div class="note">
+<strong>💡 The all-in-one example:</strong><br>
+<code>docker run -d --name myapp --restart=unless-stopped -p 3000:3000 -v $(pwd):/app -e NODE_ENV=prod --memory="512m" --cpus="1" myapp:latest</code>
+</div>
+
+<h3>Lifecycle Management</h3>
+<pre><code><span class="hl-cmt"># ── Starting & Stopping ──</span>
+docker start myweb                                <span class="hl-cmt"># start a stopped container</span>
+docker stop myweb                                 <span class="hl-cmt"># graceful stop (SIGTERM → wait → SIGKILL)</span>
+docker stop -t 30 myweb                           <span class="hl-cmt"># wait 30s before SIGKILL</span>
+docker kill myweb                                 <span class="hl-cmt"># force kill (SIGKILL immediately)</span>
+docker kill -s SIGTERM myweb                      <span class="hl-cmt"># kill with specific signal</span>
+docker restart myweb                              <span class="hl-cmt"># stop + start</span>
+docker restart -t 5 myweb                         <span class="hl-cmt"># with timeout</span>
+docker pause myweb                                <span class="hl-cmt"># freeze (SIGSTOP)</span>
+docker unpause myweb                              <span class="hl-cmt"># unfreeze (SIGCONT)</span>
+
+<span class="hl-cmt"># ── Removing ──</span>
+docker rm myweb                                   <span class="hl-cmt"># remove stopped container</span>
+docker rm -f myweb                                <span class="hl-cmt"># force remove (running or not)</span>
+docker rm -v myweb                                <span class="hl-cmt"># also remove anonymous volumes</span>
+docker rm $(docker ps -aq)                        <span class="hl-cmt"># remove ALL containers</span>
+docker rm $(docker ps -aq -f status=exited)       <span class="hl-cmt"># remove all stopped</span>
+docker container prune                            <span class="hl-cmt"># remove all stopped containers</span>
+docker container prune --filter "until=24h"       <span class="hl-cmt"># stopped &gt; 24h ago</span>
+
+<span class="hl-cmt"># ── Rename ──</span>
+docker rename myweb mynewweb</code></pre>
+
+<h3>Executing Commands in Running Containers</h3>
+<pre><code>docker exec myweb ls /app                         <span class="hl-cmt"># run single command</span>
+docker exec -it myweb bash                        <span class="hl-cmt"># interactive shell</span>
+docker exec -it myweb sh                          <span class="hl-cmt"># for alpine (no bash)</span>
+docker exec -e VAR=value myweb env                <span class="hl-cmt"># pass env var</span>
+docker exec -u root myweb whoami                  <span class="hl-cmt"># run as different user</span>
+docker exec -w /tmp myweb pwd                     <span class="hl-cmt"># run from specific working dir</span></code></pre>
+
+<h3>Attaching & Waiting</h3>
+<pre><code>docker attach myweb                               <span class="hl-cmt"># attach to container's stdio</span>
+docker attach --no-stdin myweb                    <span class="hl-cmt"># no stdin</span>
+docker wait myweb                                 <span class="hl-cmt"># block until container exits, prints exit code</span></code></pre>
+
+<h3>Listing & Formatting</h3>
+<pre><code>docker ps                                         <span class="hl-cmt"># running containers</span>
+docker ps -a                                      <span class="hl-cmt"># all (including stopped)</span>
+docker ps -q                                      <span class="hl-cmt"># just IDs</span>
+docker ps -s                                      <span class="hl-cmt"># include size info</span>
+docker ps -l                                      <span class="hl-cmt"># latest created (any state)</span>
+docker ps -n 5                                    <span class="hl-cmt"># last 5 containers</span>
+docker ps -f "name=myweb"                         <span class="hl-cmt"># filter by name</span>
+docker ps -f "status=exited"                      <span class="hl-cmt"># filter by status</span>
+docker ps -f "label=env=prod"                     <span class="hl-cmt"># filter by label</span>
+
+<span class="hl-cmt"># Custom format (Go templates)</span>
+docker ps --format "table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}"
+docker ps --format "{{.ID}}: {{.Command}}"        <span class="hl-cmt"># custom columns</span></code></pre>
+
+<h3>Logs</h3>
+<pre><code>docker logs myweb                                 <span class="hl-cmt"># all logs</span>
+docker logs -f myweb                              <span class="hl-cmt"># follow (like tail -f)</span>
+docker logs --tail 100 myweb                      <span class="hl-cmt"># last 100 lines</span>
+docker logs --since 30m myweb                     <span class="hl-cmt"># last 30 minutes</span>
+docker logs --until 2024-01-01T00:00:00 myweb     <span class="hl-cmt"># until timestamp</span>
+docker logs -t myweb                              <span class="hl-cmt"># include timestamps</span>
+docker logs --details myweb                       <span class="hl-cmt"># show extra log attributes</span></code></pre>
+
+<h3>Inspection & Monitoring</h3>
+<pre><code>docker inspect myweb                              <span class="hl-cmt"># full JSON config</span>
+docker inspect -f '{{.NetworkSettings.IPAddress}}' myweb
+docker inspect -f '{{.State.Status}}' myweb
+docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' myweb
+
+docker top myweb                                  <span class="hl-cmt"># running processes inside container</span>
+docker stats                                      <span class="hl-cmt"># live CPU/MEM/IO for all containers</span>
+docker stats --no-stream                         <span class="hl-cmt"># one-shot snapshot</span>
+docker stats --format "table {{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}" myweb
+
+docker port myweb                                 <span class="hl-cmt"># show port mappings</span>
+docker diff myweb                                 <span class="hl-cmt"># files changed since container started</span>
+
+docker events                                     <span class="hl-cmt"># real-time Docker events stream</span>
+docker events --filter "type=container"           <span class="hl-cmt"># only container events</span>
+docker events --filter "event=start" --filter "event=stop"</code></pre>
+
+<h3>Copying Files (host ↔ container)</h3>
+<pre><code>docker cp myfile.txt myweb:/app/file.txt          <span class="hl-cmt"># host → container</span>
+docker cp myweb:/app/log.txt ./log.txt            <span class="hl-cmt"># container → host</span>
+docker cp myweb:/app/data/ ./data/                <span class="hl-cmt"># copy entire directory</span></code></pre>
+
+<h3>Update Running Container Config</h3>
+<pre><code><span class="hl-cmt"># Update resource limits, restart policy on the fly</span>
+docker update --memory="512m" --cpus="2" myweb
+docker update --restart=always myweb
+<span class="hl-cmt"># ⚠️ Cannot update ports, volumes, or env vars on a running container.</span>
+<span class="hl-cmt">#    For those, stop → create new → start.</span></code></pre>
+</section>
+
+<!-- ═══════════════════════════════════════ -->
+<section id="compose" class="section">
+<h2>🐳 Docker Compose — Complete Reference</h2>
+<p>For multi-container apps. Define everything in <code>docker-compose.yml</code> (or <code>compose.yaml</code>).</p>
+
+<h3>Complete compose.yaml Example</h3>
+<pre><code>name: myproject                     <span class="hl-cmt"># project name (v2.23+)</span>
+
+services:
+  web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+      args:
+        - NODE_ENV=production
+    image: samir/frontend:v1.0
+    ports:
+      - "3000:3000"
+    environment:
+      - API_URL=http://api:4000
+    env_file:
+      - .env.web
+    depends_on:
+      api:
+        condition: service_healthy   <span class="hl-cmt"># wait for healthy, not just started</span>
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+    volumes:
+      - ./frontend/src:/app/src      <span class="hl-cmt"># live reload in dev</span>
+    networks:
+      - frontend
+      - backend
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+  api:
+    build: ./backend
+    ports:
+      - "4000:4000"
+    environment:
+      - DATABASE_URL=postgresql://db:5432/myapp
+      - REDIS_URL=redis://cache:6379
+    depends_on:
+      db:
+        condition: service_healthy
+      cache:
+        condition: service_started
+    profiles:
+      - full                          <span class="hl-cmt"># only start with --profile full</span>
+
+  worker:
+    build: ./worker
+    command: python worker.py
+    depends_on:
+      - api
+      - db
+    deploy:
+      replicas: 2                    <span class="hl-cmt"># run 2 instances (swarm only in v3)</span>
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: myapp
+      POSTGRES_PASSWORD: ${DB_PASSWORD}   <span class="hl-cmt"># from .env file or shell</span>
+      POSTGRES_DB: myapp
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql  <span class="hl-cmt"># auto-run on first start</span>
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U myapp"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  cache:
+    image: redis:7-alpine
+    volumes:
+      - cache_data:/data
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
+    depends_on:
+      - web
+      - api
+
+volumes:
+  pgdata:
+  cache_data:
+
+networks:
+  frontend:
+  backend:
+    internal: true                    <span class="hl-cmt"># no external connectivity</span></code></pre>
+
+<h3>All Compose CLI Commands</h3>
+<pre><code><span class="hl-cmt"># ── Core commands ──</span>
+docker compose up                                   <span class="hl-cmt"># start all services (foreground)</span>
+docker compose up -d                                <span class="hl-cmt"># background</span>
+docker compose up -d --build                        <span class="hl-cmt"># rebuild images then start</span>
+docker compose up -d --force-recreate               <span class="hl-cmt"># recreate containers even if unchanged</span>
+docker compose up -d --scale web=3                  <span class="hl-cmt"># scale (v2 compose)</span>
+docker compose up --profile full                    <span class="hl-cmt"># include profiled services</span>
+docker compose up web api                           <span class="hl-cmt"># start specific services only</span>
+
+docker compose down                                 <span class="hl-cmt"># stop and remove containers & networks</span>
+docker compose down -v                              <span class="hl-cmt"># also remove volumes (⚠️ deletes data!)</span>
+docker compose down --rmi all                       <span class="hl-cmt"># also remove images</span>
+docker compose down --remove-orphans                <span class="hl-cmt"># remove containers not in current compose file</span>
+
+<span class="hl-cmt"># ── Lifecycle ──</span>
+docker compose start                                <span class="hl-cmt"># start stopped services</span>
+docker compose stop                                 <span class="hl-cmt"># stop (don't remove)</span>
+docker compose stop -t 30                           <span class="hl-cmt"># with timeout</span>
+docker compose restart                              <span class="hl-cmt"># restart all</span>
+docker compose restart web                          <span class="hl-cmt"># restart one service</span>
+docker compose pause                                <span class="hl-cmt"># freeze all</span>
+docker compose unpause                              <span class="hl-cmt"># unfreeze</span>
+docker compose kill                                 <span class="hl-cmt"># force kill all</span>
+
+<span class="hl-cmt"># ── Viewing ──</span>
+docker compose ps                                   <span class="hl-cmt"># list compose services</span>
+docker compose ps -a                                <span class="hl-cmt"># include stopped</span>
+docker compose ps --format json                     <span class="hl-cmt"># JSON output</span>
+docker compose images                               <span class="hl-cmt"># images used by compose services</span>
+docker compose top                                  <span class="hl-cmt"># processes running in each service</span>
+docker compose port web 3000                        <span class="hl-cmt"># show published port</span>
+
+<span class="hl-cmt"># ── Logs ──</span>
+docker compose logs                                 <span class="hl-cmt"># all services</span>
+docker compose logs -f web                          <span class="hl-cmt"># follow specific service</span>
+docker compose logs --tail=100 web                  <span class="hl-cmt"># last 100 lines</span>
+docker compose logs --since 10m api                 <span class="hl-cmt"># time-based</span>
+
+<span class="hl-cmt"># ── Exec ──</span>
+docker compose exec web bash                        <span class="hl-cmt"># shell in running service</span>
+docker compose exec -T web ls /app                  <span class="hl-cmt"># no TTY (for scripts)</span>
+docker compose exec -u root web bash                <span class="hl-cmt"># as different user</span>
+docker compose exec -e FOO=bar web env              <span class="hl-cmt"># with env var</span>
+docker compose run web npm test                     <span class="hl-cmt"># run one-off command (new container)</span>
+docker compose run --rm web npm test                <span class="hl-cmt"># auto-remove after</span>
+docker compose run --service-ports web bash         <span class="hl-cmt"># with port mappings</span>
+
+<span class="hl-cmt"># ── Build ──</span>
+docker compose build                                <span class="hl-cmt"># build all services</span>
+docker compose build --no-cache web                 <span class="hl-cmt"># force rebuild one</span>
+docker compose build --build-arg ENV=prod web       <span class="hl-cmt"># with build args</span>
+
+<span class="hl-cmt"># ── Config & Validation ──</span>
+docker compose config                               <span class="hl-cmt"># show resolved config (with variable substitution)</span>
+docker compose config --services                    <span class="hl-cmt"># list service names only</span>
+docker compose config --volumes                     <span class="hl-cmt"># list volumes</span>
+
+<span class="hl-cmt"># ── Other ──</span>
+docker compose pull                                 <span class="hl-cmt"># pull latest images for all services</span>
+docker compose push                                 <span class="hl-cmt"># push built images to registry</span>
+docker compose cp myfile.txt web:/app/file.txt      <span class="hl-cmt"># copy files</span>
+docker compose events                               <span class="hl-cmt"># real-time events for project</span>
+docker compose watch                                <span class="hl-cmt"># watch for file changes and sync (v2.22+)</span></code></pre>
+
+<h3>Compose Environment Variables</h3>
+<pre><code><span class="hl-cmt"># Priority (highest to lowest):</span>
+<span class="hl-cmt"># 1. Shell environment variables</span>
+<span class="hl-cmt"># 2. --env-file on command line</span>
+<span class="hl-cmt"># 3. env_file in compose file (service-level overrides project-level)</span>
+<span class="hl-cmt"># 4. environment: in compose file</span>
+<span class="hl-cmt"># 5. .env file (in project directory)</span>
+
+<span class="hl-cmt"># .env file example:</span>
+DB_PASSWORD=supersecret
+API_KEY=sk-abc123
+COMPOSE_PROJECT_NAME=myproject
+
+<span class="hl-cmt"># Usage in compose.yaml:</span>
+environment:
+  - PASSWORD=${DB_PASSWORD}
+  - KEY=${API_KEY:-default_value}        <span class="hl-cmt"># default if not set</span>
+  - REQUIRED=${API_KEY:?err}             <span class="hl-cmt"># error if not set</span></code></pre>
+</section>
+
+<!-- ═══════════════════════════════════════ -->
+<section id="volumes" class="section">
+<h2>💾 Volumes & Storage</h2>
+
+<h3>Volume Types</h3>
+<div class="table-wrap">
+<table>
+  <tr><th>Type</th><th>Managed By</th><th>Location</th><th>Use Case</th></tr>
+  <tr><td>Named Volume</td><td>Docker</td><td><code>/var/lib/docker/volumes/</code></td><td>Production data persistence</td></tr>
+  <tr><td>Bind Mount</td><td>You</td><td>Any host path</td><td>Development (live reload, sharing config)</td></tr>
+  <tr><td>Anonymous Volume</td><td>Docker</td><td>Random dir</td><td>Ephemeral (deleted with container unless <code>-v</code> flag)</td></tr>
+  <tr><td>tmpfs</td><td>Kernel</td><td>RAM</td><td>Sensitive temp data, no disk writes</td></tr>
+</table>
+</div>
+
+<h3>Volume Commands</h3>
+<pre><code><span class="hl-cmt"># ── Create & Inspect ──</span>
+docker volume create mydata
+docker volume create --driver local --opt type=nfs --opt device=:/nfs/path nfsvol
+docker volume ls
+docker volume inspect mydata                       <span class="hl-cmt"># see mountpoint, labels, driver</span>
+docker volume ls -f dangling=true                  <span class="hl-cmt"># unused volumes only</span>
+
+<span class="hl-cmt"># ── Remove ──</span>
+docker volume rm mydata
+docker volume rm $(docker volume ls -q)            <span class="hl-cmt"># remove ALL (⚠️)</span>
+docker volume prune                                <span class="hl-cmt"># remove all unused local volumes</span>
+docker volume prune -a                             <span class="hl-cmt"># all unused (including named)</span>
+docker volume prune --filter "label!=keep"</code></pre>
+
+<h3>Usage Patterns</h3>
+<pre><code><span class="hl-cmt"># Named volume (Docker manages the path)</span>
+docker run -v mydata:/app/data myapp
+
+<span class="hl-cmt"># Bind mount (you pick the host path)</span>
+docker run -v /home/samir/project:/app myapp
+docker run -v $(pwd):/app myapp                    <span class="hl-cmt"># current directory</span>
+docker run -v /host/config:/app/config:ro myapp    <span class="hl-cmt"># read-only bind mount</span>
+
+<span class="hl-cmt"># Anonymous volume (auto-generated)</span>
+docker run -v /app/data myapp                      <span class="hl-cmt"># no host path given</span>
+
+<span class="hl-cmt"># tmpfs (in-memory)</span>
+docker run --tmpfs /tmp:rw,size=64m myapp
+docker run --tmpfs /run:rw,noexec,nosuid,size=32m myapp
+
+<span class="hl-cmt"># --mount (verbose, recommended for production)</span>
+docker run --mount type=bind,src=$(pwd)/config,dst=/app/config,readonly myapp
+docker run --mount type=volume,src=mydata,dst=/data,volume-driver=local myapp
+docker run --mount type=tmpfs,dst=/tmp,tmpfs-size=64m myapp</code></pre>
+
+<h3>Backup & Restore Volumes</h3>
+<pre><code><span class="hl-cmt"># Backup a volume</span>
+docker run --rm -v mydata:/data -v $(pwd):/backup alpine \
+  tar czf /backup/mydata-backup.tar.gz -C /data .
+
+<span class="hl-cmt"># Restore a volume</span>
+docker run --rm -v mydata:/data -v $(pwd):/backup alpine \
+  tar xzf /backup/mydata-backup.tar.gz -C /data</code></pre>
+</section>
+
+<!-- ═══════════════════════════════════════ -->
+<section id="networks" class="section">
+<h2>🌐 Networks</h2>
+
+<h3>Network Drivers</h3>
+<div class="table-wrap">
+<table>
+  <tr><th>Driver</th><th>Behavior</th><th>Use Case</th></tr>
+  <tr><td><code>bridge</code></td><td>Default. Containers on same bridge can talk. DNS by container name.</td><td>Single-host apps</td></tr>
+  <tr><td><code>host</code></td><td>Container shares host's network stack directly.</td><td>Max performance, no isolation needed</td></tr>
+  <tr><td><code>none</code></td><td>No networking at all.</td><td>Security isolation</td></tr>
+  <tr><td><code>overlay</code></td><td>Multi-host networking (Swarm).</td><td>Distributed apps across nodes</td></tr>
+  <tr><td><code>macvlan</code></td><td>Container gets its own MAC/IP on physical network.</td><td>Legacy apps expecting real IPs</td></tr>
+  <tr><td><code>ipvlan</code></td><td>Like macvlan but shares MAC. Lower overhead.</td><td>When MAC limits are a problem</td></tr>
+</table>
+</div>
+
+<h3>Network Commands</h3>
+<pre><code><span class="hl-cmt"># ── Create & Manage ──</span>
+docker network create mynet
+docker network create --driver bridge --subnet=172.28.0.0/16 --gateway=172.28.0.1 mynet
+docker network create --internal mynet              <span class="hl-cmt"># no external connectivity</span>
+docker network create --attachable mynet            <span class="hl-cmt"># for overlay: allow standalone containers to attach</span>
+docker network ls
+docker network ls -f driver=bridge
+docker network inspect mynet
+docker network rm mynet
+docker network prune                                <span class="hl-cmt"># remove all unused</span>
+
+<span class="hl-cmt"># ── Connect & Disconnect ──</span>
+docker network connect mynet myweb
+docker network connect --ip 172.28.0.100 mynet myweb
+docker network connect --alias db mynet myweb       <span class="hl-cmt"># extra DNS alias</span>
+docker network disconnect mynet myweb
+
+<span class="hl-cmt"># ── Using Networks ──</span>
+docker run --network mynet nginx
+docker run --network host nginx                     <span class="hl-cmt"># share host network</span>
+docker run --network none nginx                     <span class="hl-cmt"># no networking</span>
+
+<span class="hl-cmt"># ── DNS: containers on same network resolve by name ──</span>
+docker run -d --name db --network mynet postgres
+docker run -d --name web --network mynet myapp
+docker exec web ping db                             <span class="hl-cmt"># ← resolves to db container's IP</span></code></pre>
+</section>
+
+<!-- ═══════════════════════════════════════ -->
+<section id="registry" class="section">
+<h2>☁️ Registry Operations (Push, Pull, Login)</h2>
+
+<h3>Docker Hub</h3>
+<pre><code><span class="hl-cmt"># ── Login/Logout ──</span>
+docker login                                        <span class="hl-cmt"># interactive</span>
+docker login -u samir                               <span class="hl-cmt"># specify username</span>
+docker login --password-stdin < password.txt        <span class="hl-cmt"># CI/CD (stdin)</span>
+docker logout
+
+<span class="hl-cmt"># ── Push/Pull ──</span>
+docker pull nginx:latest
+docker pull ubuntu:22.04                            <span class="hl-cmt"># specific version</span>
+docker pull python:3.12-slim                        <span class="hl-cmt"># slim variant</span>
+docker pull alpine                                  <span class="hl-cmt"># :latest is default</span>
+docker pull --all-tags samir/myapp                  <span class="hl-cmt"># pull all tags</span>
+docker pull --platform linux/amd64 nginx            <span class="hl-cmt"># specific architecture</span>
+
+docker push samir/myapp:v1.0
+docker push --all-tags samir/myapp                  <span class="hl-cmt"># push all local tags</span>
+
+<span class="hl-cmt"># ── Search ──</span>
+docker search nginx
+docker search --limit 25 python
+docker search --filter is-official=true ubuntu
+docker search --filter stars=100 node</code></pre>
+
+<h3>Other Registries</h3>
+<pre><code><span class="hl-cmt"># ── GitHub Container Registry (ghcr.io) ──</span>
+echo $CR_PAT | docker login ghcr.io -u samir --password-stdin
+docker tag myapp ghcr.io/samir/myapp:v1.0
+docker push ghcr.io/samir/myapp:v1.0
+
+<span class="hl-cmt"># ── AWS ECR ──</span>
+aws ecr get-login-password --region us-east-1 | \
+  docker login -u AWS --password-stdin ACCOUNT.dkr.ecr.us-east-1.amazonaws.com
+docker tag myapp:latest ACCOUNT.dkr.ecr.us-east-1.amazonaws.com/myapp:latest
+docker push ACCOUNT.dkr.ecr.us-east-1.amazonaws.com/myapp:latest
+
+<span class="hl-cmt"># ── Google Artifact Registry ──</span>
+gcloud auth configure-docker us-central1-docker.pkg.dev
+docker push us-central1-docker.pkg.dev/PROJECT/repo/myapp:v1.0
+
+<span class="hl-cmt"># ── Azure Container Registry (ACR) ──</span>
+az acr login --name myregistry
+docker push myregistry.azurecr.io/myapp:v1.0
+
+<span class="hl-cmt"># ── Self-hosted / Private Registry ──</span>
+docker login registry.example.com
+docker tag myapp registry.example.com/myapp:v1.0
+docker push registry.example.com/myapp:v1.0</code></pre>
+
+<h3>Image Transfer Without Registry</h3>
+<pre><code><span class="hl-cmt"># Save → scp → load (offline / air-gapped)</span>
+docker save myapp:latest -o myapp.tar
+scp myapp.tar user@server:/tmp/
+ssh user@server "docker load -i /tmp/myapp.tar"
+
+<span class="hl-cmt"># Pipe directly (one-liner via SSH)</span>
+docker save myapp:latest | gzip | ssh user@server "gunzip | docker load"</code></pre>
+</section>
+
+<!-- ═══════════════════════════════════════ -->
+<section id="resources" class="section">
+<h2>⚙️ Resource Limits & Constraints</h2>
+<div class="note">Resource limits prevent one container from hogging the entire machine.</div>
+
+<pre><code><span class="hl-cmt"># ── Memory ──</span>
+docker run --memory="512m" nginx                    <span class="hl-cmt"># hard limit</span>
+docker run --memory="512m" --memory-reservation="256m" nginx  <span class="hl-cmt"># soft limit</span>
+docker run --memory="512m" --memory-swap="1g" nginx <span class="hl-cmt"># total (mem + swap) limit</span>
+docker run --memory="512m" --memory-swap="0" nginx  <span class="hl-cmt"># disable swap</span>
+docker run --memory-swappiness=10 nginx             <span class="hl-cmt"># 0-100, lower = less swap</span>
+docker run --oom-kill-disable nginx                 <span class="hl-cmt"># don't kill on OOM (⚠️ risky)</span>
+
+<span class="hl-cmt"># ── CPU ──</span>
+docker run --cpus="1.5" nginx                       <span class="hl-cmt"># max 1.5 cores</span>
+docker run --cpus=".5" nginx                        <span class="hl-cmt"># half a core</span>
+docker run --cpu-shares=512 nginx                   <span class="hl-cmt"># relative weight (default 1024)</span>
+docker run --cpuset-cpus="0-3" nginx                <span class="hl-cmt"># pin to cores 0,1,2,3</span>
+docker run --cpuset-cpus="0,2" nginx                <span class="hl-cmt"># pin to cores 0 and 2</span>
+docker run --cpu-period=100000 --cpu-quota=50000 nginx  <span class="hl-cmt"># 50% of a CPU</span>
+
+<span class="hl-cmt"># ── Disk I/O ──</span>
+docker run --blkio-weight=500 nginx                 <span class="hl-cmt"># relative weight (10-1000)</span>
+docker run --device-read-bps=/dev/sda:1mb nginx     <span class="hl-cmt"># read limit</span>
+docker run --device-write-bps=/dev/sda:1mb nginx    <span class="hl-cmt"># write limit</span>
+
+<span class="hl-cmt"># ── Other limits ──</span>
+docker run --pids-limit=100 nginx                   <span class="hl-cmt"># max processes</span>
+docker run --ulimit nofile=1024:2048 nginx          <span class="hl-cmt"># file descriptor limit (soft:hard)</span>
+docker run --shm-size="256m" nginx                  <span class="hl-cmt"># /dev/shm size</span>
+
+<span class="hl-cmt"># ── Update running container ──</span>
+docker update --memory="1g" --cpus="2" myweb</code></pre>
+</section>
+
+<!-- ═══════════════════════════════════════ -->
+<section id="buildx" class="section">
+<h2>🏗️ Docker Buildx — Multi-Platform Builds</h2>
+<pre><code><span class="hl-cmt"># ── Create a builder ──</span>
+docker buildx create --name mybuilder --use
+docker buildx create --name mybuilder --driver docker-container --use  <span class="hl-cmt"># advanced driver</span>
+docker buildx ls
+docker buildx inspect mybuilder
+docker buildx use mybuilder
+
+<span class="hl-cmt"># ── Multi-platform build ──</span>
+docker buildx build --platform linux/amd64,linux/arm64 -t samir/myapp:latest .
+docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t samir/myapp:v1.0 .
+
+<span class="hl-cmt"># ── Build + Push (all-in-one) ──</span>
+docker buildx build --platform linux/amd64,linux/arm64 \
+  -t samir/myapp:latest --push .
+
+<span class="hl-cmt"># ── Build without pushing ──</span>
+docker buildx build --platform linux/amd64,linux/arm64 \
+  -t samir/myapp:latest -o type=docker .            <span class="hl-cmt"># load into local docker</span>
+
+<span class="hl-cmt"># ── Cache ──</span>
+docker buildx build --cache-to type=registry,ref=samir/myapp:cache \
+  --cache-from type=registry,ref=samir/myapp:cache -t samir/myapp:latest .
+
+<span class="hl-cmt"># ── Cleanup ──</span>
+docker buildx rm mybuilder
+docker buildx prune                                 <span class="hl-cmt"># clean build cache</span></code></pre>
+</section>
+
+<!-- ═══════════════════════════════════════ -->
+<section id="swarm" class="section">
+<h2>🐝 Docker Swarm (Basics)</h2>
+<pre><code><span class="hl-cmt"># ── Init & Join ──</span>
+docker swarm init                                   <span class="hl-cmt"># create swarm (on manager)</span>
+docker swarm init --advertise-addr 192.168.1.10
+docker swarm join --token SWMTKN-... 192.168.1.10:2377  <span class="hl-cmt"># worker joins</span>
+docker swarm join-token manager                     <span class="hl-cmt"># get manager join token</span>
+docker swarm join-token worker                      <span class="hl-cmt"># get worker join token</span>
+docker swarm leave                                  <span class="hl-cmt"># leave swarm</span>
+docker swarm leave --force                          <span class="hl-cmt"># force leave (manager)</span>
+
+<span class="hl-cmt"># ── Nodes ──</span>
+docker node ls
+docker node inspect node1
+docker node update --availability drain node1       <span class="hl-cmt"># take node out of service</span>
+docker node update --label-add env=prod node1
+docker node promote node2                           <span class="hl-cmt"># worker → manager</span>
+docker node demote node1                            <span class="hl-cmt"># manager → worker</span>
+
+<span class="hl-cmt"># ── Services (swarm-level containers) ──</span>
+docker service create --name web --replicas 3 -p 80:80 nginx
+docker service ls
+docker service ps web
+docker service inspect web
+docker service logs -f web
+docker service scale web=5
+docker service update --image nginx:alpine web      <span class="hl-cmt"># rolling update</span>
+docker service update --force web                   <span class="hl-cmt"># force re-deploy</span>
+docker service rollback web
+docker service rm web
+
+<span class="hl-cmt"># ── Stacks (compose in swarm) ──</span>
+docker stack deploy -c docker-compose.yml mystack
+docker stack ls
+docker stack services mystack
+docker stack ps mystack
+docker stack rm mystack</code></pre>
+</section>
+
+<!-- ═══════════════════════════════════════ -->
+<section id="cleanup" class="section">
+<h2>🧹 Cleanup — Free Up Disk Space</h2>
+<pre><code><span class="hl-cmt"># ── Check disk usage ──</span>
+docker system df                                    <span class="hl-cmt"># summary</span>
+docker system df -v                                 <span class="hl-cmt"># verbose (per-image, per-container, per-volume)</span>
+
+<span class="hl-cmt"># ── Prune by category ──</span>
+docker container prune                              <span class="hl-cmt"># stopped containers</span>
+docker image prune                                  <span class="hl-cmt"># dangling images (&lt;none&gt;)</span>
+docker image prune -a                               <span class="hl-cmt"># ALL unused images</span>
+docker volume prune                                 <span class="hl-cmt"># unused volumes</span>
+docker network prune                                <span class="hl-cmt"># unused networks</span>
+docker builder prune                                <span class="hl-cmt"># build cache</span>
+
+<span class="hl-cmt"># ── Prune with filters ──</span>
+docker container prune --filter "until=24h"
+docker image prune -a --filter "until=7d"
+docker image prune -a --filter "label=env=dev"
+
+<span class="hl-cmt"># ── Nuclear options ──</span>
+docker system prune                                 <span class="hl-cmt"># containers + networks + dangling images + build cache</span>
+docker system prune -a                              <span class="hl-cmt"># + ALL unused images</span>
+docker system prune -a --volumes                    <span class="hl-cmt"># + volumes (⚠️⚠️ data loss!)</span>
+docker system prune -a -f                           <span class="hl-cmt"># skip confirmation prompt</span>
+
+<span class="hl-cmt"># ── Manual all-in-one (if you need exact control) ──</span>
+docker stop $(docker ps -aq)                        <span class="hl-cmt"># stop everything</span>
+docker rm $(docker ps -aq)                          <span class="hl-cmt"># remove everything</span>
+docker rmi $(docker images -q)                      <span class="hl-cmt"># remove every image</span>
+docker volume rm $(docker volume ls -q)             <span class="hl-cmt"># remove every volume</span>
+docker network rm $(docker network ls -q)           <span class="hl-cmt"># remove every network</span></code></pre>
+</section>
+
+<!-- ═══════════════════════════════════════ -->
+<section id="debug" class="section">
+<h2>🔍 Debugging & Troubleshooting</h2>
+
+<h3>Common Debug Workflows</h3>
+<pre><code><span class="hl-cmt"># "Why won't my container start?"</span>
+docker ps -a                          <span class="hl-cmt"># is it exited? crashed?</span>
+docker logs mycontainer               <span class="hl-cmt"># check the output</span>
+docker logs --tail 50 mycontainer     <span class="hl-cmt"># last 50 lines</span>
+docker inspect mycontainer            <span class="hl-cmt"># full config (State.ExitCode, State.Error)</span>
+
+<span class="hl-cmt"># "Get a shell inside to poke around"</span>
+docker exec -it mycontainer bash
+docker exec -it mycontainer sh         <span class="hl-cmt"># alpine images</span>
+
+<span class="hl-cmt"># "Container exits immediately — debug it"</span>
+docker run -it --entrypoint /bin/bash broken-image
+docker run -it --entrypoint /bin/sh broken-image
+docker commit broken-container debug-image && docker run -it debug-image bash
+
+<span class="hl-cmt"># "What's using all my disk space?"</span>
+docker system df -v                   <span class="hl-cmt"># detailed breakdown</span>
+du -sh /var/lib/docker/               <span class="hl-cmt"># direct disk usage</span>
+
+<span class="hl-cmt"># "Is my port mapping working?"</span>
+docker port mycontainer
+ss -tlnp | grep <port>                <span class="hl-cmt"># check if host is listening</span>
+curl localhost:PORT                   <span class="hl-cmt"># quick test</span>
+
+<span class="hl-cmt"># "What processes are running inside?"</span>
+docker top mycontainer
+
+<span class="hl-cmt"># "Live resource usage"</span>
+docker stats                          <span class="hl-cmt"># CPU, memory, I/O, pids</span>
+docker stats --no-stream              <span class="hl-cmt"># one-shot</span>
+
+<span class="hl-cmt"># "What files changed inside?"</span>
+docker diff mycontainer               <span class="hl-cmt"># A=added, C=changed, D=deleted</span>
+
+<span class="hl-cmt"># "See Docker events in real-time"</span>
+docker events                         <span class="hl-cmt"># all events</span>
+docker events --filter type=container --filter event=die  <span class="hl-cmt"># only container deaths</span>
+
+<span class="hl-cmt"># "System info"</span>
+docker info                           <span class="hl-cmt"># daemon config, storage driver, registries</span>
+docker version                        <span class="hl-cmt"># client + server version details</span></code></pre>
+
+<h3>Common Issues & Fixes</h3>
+<div class="table-wrap">
+<table>
+  <tr><th>Symptom</th><th>Likely Cause</th><th>Fix</th></tr>
+  <tr><td>Container exits immediately</td><td>No foreground process</td><td>Make sure CMD/ENTRYPOINT is a foreground process</td></tr>
+  <tr><td>Port already in use</td><td>Another process on host port</td><td><code>lsof -i :PORT</code>, change host port mapping</td></tr>
+  <tr><td>"Permission denied" on volume</td><td>UID/GID mismatch</td><td><code>docker run -u $(id -u):$(id -g)</code></td></tr>
+  <tr><td>Can't connect to localhost</td><td>Container has its own localhost</td><td>Use <code>host.docker.internal</code> (Mac/Win) or <code>--network host</code></td></tr>
+  <tr><td>Container can't reach internet</td><td>DNS or network issue</td><td><code>docker run --dns 8.8.8.8</code>, restart docker daemon</td></tr>
+  <tr><td>OOM killed</td><td>Memory limit too low</td><td><code>docker run --memory="1g"</code> or check app for memory leaks</td></tr>
+  <tr><td>Build is slow</td><td>Bad layer ordering</td><td>COPY package.json → RUN install → COPY rest</td></tr>
+  <tr><td>Image too large</td><td>No multi-stage build</td><td>Use multi-stage builds, alpine base images</td></tr>
+</table>
+</div>
+</section>
+
+<!-- ═══════════════════════════════════════ -->
+<section id="dockerignore" class="section">
+<h2>📝 .dockerignore — Exclude Files from Build Context</h2>
+<pre><code><span class="hl-cmt"># .dockerignore — placed next to Dockerfile</span>
+<span class="hl-cmt"># Speeds up builds and keeps secrets out of images</span>
+
+<span class="hl-cmt"># Version control</span>
+.git
+.gitignore
+.svn
+
+<span class="hl-cmt"># Dependencies</span>
+node_modules
+vendor
+__pycache__
+*.pyc
+.venv
+venv
+
+<span class="hl-cmt"># Build artifacts</span>
+dist
+build
+*.exe
+*.dll
+*.so
+*.dylib
+
+<span class="hl-cmt"># IDE & Editor</span>
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+<span class="hl-cmt"># OS</span>
+.DS_Store
+Thumbs.db
+
+<span class="hl-cmt"># Environment & secrets</span>
+.env
+.env.*
+*.key
+*.pem
+secrets/
+
+<span class="hl-cmt"># Logs & temp</span>
+*.log
+logs/
+tmp/
+temp/
+*.tmp
+
+<span class="hl-cmt"># Docker</span>
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+<span class="hl-cmt"># Tests & docs (unless needed)</span>
+tests/
+__tests__/
+docs/
+*.md
+
+<span class="hl-cmt"># Use negation (!) to include something excluded above</span>
+!README.md
+!.env.example</code></pre>
+</section>
+
+<!-- ═══════════════════════════════════════ -->
+<section id="quickref" class="section">
+<h2>⚡ Quick Reference Card</h2>
+<div class="note"><strong>Print this section. Stick it on your wall.</strong></div>
+
+<pre><code><span class="hl-cmt"># ── Images ──────────────────────────────────</span>
+docker pull nginx:latest                <span class="hl-cmt"># pull image</span>
+docker build -t myapp:v1 .              <span class="hl-cmt"># build from Dockerfile</span>
+docker images                           <span class="hl-cmt"># list images</span>
+docker rmi myapp:v1                     <span class="hl-cmt"># remove image</span>
+
+<span class="hl-cmt"># ── Containers ─────────────────────────────</span>
+docker run -d --name app -p 3000:3000 myapp   <span class="hl-cmt"># start</span>
+docker ps -a                                  <span class="hl-cmt"># list all</span>
+docker stop app && docker rm app               <span class="hl-cmt"># stop + remove</span>
+docker exec -it app bash                       <span class="hl-cmt"># shell inside</span>
+docker logs -f app                             <span class="hl-cmt"># follow logs</span>
+
+<span class="hl-cmt"># ── Compose ────────────────────────────────</span>
+docker compose up -d                      <span class="hl-cmt"># start project</span>
+docker compose down                        <span class="hl-cmt"># stop project</span>
+docker compose logs -f web                <span class="hl-cmt"># service logs</span>
+docker compose exec web bash              <span class="hl-cmt"># shell in service</span>
+
+<span class="hl-cmt"># ── Cleanup ────────────────────────────────</span>
+docker system prune -a                    <span class="hl-cmt"># clean everything unused</span>
+docker system df                          <span class="hl-cmt"># disk usage</span>
+
+<span class="hl-cmt"># ── Debug ──────────────────────────────────</span>
+docker inspect container_name             <span class="hl-cmt"># full config</span>
+docker stats                              <span class="hl-cmt"># resource usage</span>
+docker events                             <span class="hl-cmt"># event stream</span></code></pre>
+</section>
+
+<hr>
+<p style="text-align:center;color:var(--text2);padding:20px 0;font-size:.85rem;">
+  Built for Samir · The only Docker reference you'll ever need · <span class="tag">v2.0</span>
+</p>
+</main>
+
+<button class="back-top" id="back-top" title="Back to top">↑</button>
+
+<!-- ═══════════ SCRIPTS ═══════════ -->
+<script>
+// ── Search / Filter ──
+const searchInput = document.getElementById('search');
+const sections = document.querySelectorAll('.section');
+const noResults = document.getElementById('no-results');
+
+searchInput.addEventListener('input', function() {
+  const query = this.value.toLowerCase().trim();
+  let foundAny = false;
+
+  sections.forEach(section => {
+    // Store original display if not stored yet
+    if (!section.dataset.originalDisplay) {
+      section.dataset.originalDisplay = section.style.display || '';
+    }
+
+    if (!query) {
+      section.style.display = section.dataset.originalDisplay;
+      section.querySelectorAll('.search-highlight').forEach(el => {
+        el.outerHTML = el.textContent;
+      });
+      return;
+    }
+
+    const text = section.textContent.toLowerCase();
+    if (text.includes(query)) {
+      section.style.display = section.dataset.originalDisplay;
+      foundAny = true;
+
+      // Highlight matches in code blocks and text
+      highlightInSection(section, query);
+    } else {
+      section.style.display = 'none';
+    }
+  });
+
+  noResults.style.display = foundAny || !query ? 'none' : 'block';
+
+  // Scroll to first visible section
+  if (query && foundAny) {
+    const first = document.querySelector('.section[style*="display:"][style*="block"], .section:not([style*="display:none"])');
+    if (first) first.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+});
+
+function highlightInSection(section, query) {
+  // Only highlight in pre > code and p > strong, not everywhere (too slow)
+  section.querySelectorAll('pre code').forEach(code => {
+    const original = code.getAttribute('data-original') || code.textContent;
+    if (!code.getAttribute('data-original')) {
+      code.setAttribute('data-original', original);
+    }
+    if (original.toLowerCase().includes(query)) {
+      const regex = new RegExp(`(${escapeRegex(query)})`, 'gi');
+      code.innerHTML = original.replace(regex,
+        '<mark class="search-highlight" style="background:rgba(240,136,62,.4);border-radius:2px;padding:0 2px">$1</mark>');
+    }
+  });
+}
+
+function escapeRegex(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// ── Copy to Clipboard ──
+document.querySelectorAll('pre').forEach(pre => {
+  const btn = document.createElement('button');
+  btn.className = 'copy-btn';
+  btn.textContent = '📋 Copy';
+  pre.appendChild(btn);
+
+  btn.addEventListener('click', async () => {
+    const code = pre.querySelector('code');
+    // Get the raw text without HTML highlighting
+    const rawText = code.getAttribute('data-original') || code.textContent;
+    try {
+      await navigator.clipboard.writeText(rawText);
+      btn.textContent = '✓ Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = '📋 Copy';
+        btn.classList.remove('copied');
+      }, 2000);
+    } catch (err) {
+      // Fallback
+      const textarea = document.createElement('textarea');
+      textarea.value = rawText;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      btn.textContent = '✓ Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = '📋 Copy';
+        btn.classList.remove('copied');
+      }, 2000);
+    }
+  });
+});
+
+// ── Back to Top ──
+const backTop = document.getElementById('back-top');
+
+window.addEventListener('scroll', () => {
+  backTop.style.display = window.scrollY > 500 ? 'flex' : 'none';
+});
+
+backTop.addEventListener('click', () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+// ── Hamburger Menu Toggle ──
+const hamburger = document.getElementById('hamburger');
+const nav = document.getElementById('nav');
+const overlay = document.getElementById('overlay');
+
+function openNav() {
+  nav.classList.add('open');
+  overlay.classList.add('active');
+  hamburger.textContent = '✕';
+  hamburger.setAttribute('aria-label', 'Close menu');
+}
+function closeNav() {
+  nav.classList.remove('open');
+  overlay.classList.remove('active');
+  hamburger.textContent = '☰';
+  hamburger.setAttribute('aria-label', 'Menu');
+}
+
+hamburger.addEventListener('click', () => {
+  nav.classList.contains('open') ? closeNav() : openNav();
+});
+overlay.addEventListener('click', closeNav);
+
+// Close nav when a link is clicked (mobile UX)
+nav.querySelectorAll('a').forEach(link => {
+  link.addEventListener('click', () => {
+    if (window.innerWidth <= 768) closeNav();
+  });
+});
+
+// ── Active Nav Link ──
+const navLinks = document.querySelectorAll('nav a');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      navLinks.forEach(link => {
+        link.classList.toggle('active',
+          link.getAttribute('href') === '#' + entry.target.id);
+      });
+    }
+  });
+}, { rootMargin: '-20% 0px -70% 0px' });
+
+sections.forEach(section => observer.observe(section));
+
+// ── Keyboard shortcut: Ctrl+K / Cmd+K = focus search ──
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+    e.preventDefault();
+    searchInput.focus();
+    searchInput.select();
+  }
+  // Escape to clear search
+  if (e.key === 'Escape' && document.activeElement === searchInput) {
+    searchInput.value = '';
+    searchInput.dispatchEvent(new Event('input'));
+    searchInput.blur();
+  }
+});
+</script>
+</body>
+</html>
