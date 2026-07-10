@@ -1,4 +1,7 @@
+☰
 
+::: {#overlay .overlay}
+:::
 
 ## 🐳 Docker Cheatsheet
 
@@ -10,6 +13,13 @@ Limits](#resources) [🏗️ Buildx](#buildx) [🐝 Swarm (basics)](#swarm) [�
 Cleanup](#cleanup) [🔍 Debug](#debug) [📝 .dockerignore](#dockerignore)
 [⚡ Quick Ref](#quickref)
 
+::: {role="main"}
+::: search-wrap
+:::
+
+::: {#no-results .no-results}
+No matches found. Try a different search term.
+:::
 
 # 🐳 Docker --- The Complete Cheatsheet
 
@@ -17,43 +27,56 @@ Every command, every flag, every use case. One page. No hunting through
 random blogs.\
 [v2.0]{.tag} [Complete]{.tag .green} [Beginner-Friendly]{.tag .orange}
 
+::: {#concepts .section .section}
 ## 💡 Core Concepts (30 Seconds)
 
 Docker packages your app + everything it needs into a **container** that
 runs identically everywhere --- your laptop, a server, the cloud. No
 \"works on my machine\" nonsense.
 
+::: concept-grid
+::: concept-card
 #### 🖼️ Image
 
 A read-only blueprint / recipe. Built from a Dockerfile. Stored in
 layers.
+:::
 
+::: concept-card
 #### 📦 Container
 
 A running instance of an image. Isolated process with its own
 filesystem.
+:::
 
+::: concept-card
 #### 📝 Dockerfile
 
 Text file with build instructions. Think of it as a shell script for
 building images.
+:::
 
+::: concept-card
 #### 💾 Volume
 
 Persistent storage that survives container deletion. A shared fridge for
 your data.
+:::
 
+::: concept-card
 #### 🌐 Network
 
 Virtual wiring --- how containers find and talk to each other.
+:::
 
+::: concept-card
 #### ☁️ Registry
 
 Image storage & distribution. Docker Hub is the default public one.
 :::
 :::
 
-
+::: table-wrap
   Concept      Real-World Analogy                     CLI Object
   ------------ -------------------------------------- --------------------
   Image        Recipe (read-only)                     `docker image`
@@ -77,7 +100,9 @@ Image storage & distribution. Docker Hub is the default public one.
     # RUNSC (runc)
     #     ↓  actually creates & runs the container
     # CONTAINER
+:::
 
+::: {#install .section .section}
 ## 📥 Installation
 
 ### Linux (Ubuntu/Debian --- recommended way)
@@ -106,7 +131,9 @@ Image storage & distribution. Docker Hub is the default public one.
     # Download Docker Desktop from docker.com
     # Requires WSL 2 backend for best performance
     wsl --install  # Enable WSL 2 first if needed
+:::
 
+::: {#dockerfile .section .section}
 ## 🏗️ Dockerfile --- Complete Reference
 
 A Dockerfile is a plain text file named `Dockerfile` (no extension).
@@ -139,7 +166,7 @@ Each instruction creates a layer.
 
 ### Every Dockerfile Instruction
 
-
+::: table-wrap
   Instruction     Purpose                               Example
   --------------- ------------------------------------- -------------------------------------------------
   `FROM`          Base image (must be first)            `FROM node:20-alpine`
@@ -200,7 +227,7 @@ Each instruction creates a layer.
 
 ### Dockerfile Best Practices
 
-
+::: table-wrap
   ✅ Do                                                                ❌ Don\'t
   -------------------------------------------------------------------- ------------------------------------------------
   Pin specific tags: `node:20-alpine`                                  Use `:latest` in production
@@ -211,7 +238,10 @@ Each instruction creates a layer.
   Run as non-root USER                                                 Run containers as root in production
   Use `COPY` (explicit)                                                Use `ADD` unless you need tar extraction
   Clean up in same RUN: `apt install && rm -rf /var/lib/apt/lists/*`   Clean in separate RUN (layer still holds data)
+:::
+:::
 
+::: {#images .section .section}
 ## 📦 Image Commands
 
 ### Building Images
@@ -282,7 +312,9 @@ Each instruction creates a layer.
     docker export mycontainer > mycontainer.tar        # flat FS export (no layers/history)
     docker import mycontainer.tar myimage:flat         # import flat FS as image
     # export/import loses metadata. Use save/load to preserve layers & history.
+:::
 
+::: {#containers .section .section}
 ## 🚀 Container Commands
 
 ### docker run --- The Swiss Army Knife
@@ -645,7 +677,7 @@ For multi-container apps. Define everything in `docker-compose.yml` (or
 
 ### Volume Types
 
-
+::: table-wrap
   Type               Managed By   Location                     Use Case
   ------------------ ------------ ---------------------------- -----------------------------------------------------
   Named Volume       Docker       `/var/lib/docker/volumes/`   Production data persistence
@@ -708,7 +740,7 @@ For multi-container apps. Define everything in `docker-compose.yml` (or
 
 ### Network Drivers
 
-
+::: table-wrap
   Driver      Behavior                                                              Use Case
   ----------- --------------------------------------------------------------------- --------------------------------------
   `bridge`    Default. Containers on same bridge can talk. DNS by container name.   Single-host apps
@@ -954,7 +986,9 @@ Resource limits prevent one container from hogging the entire machine.
     docker rmi $(docker images -q)                      # remove every image
     docker volume rm $(docker volume ls -q)             # remove every volume
     docker network rm $(docker network ls -q)           # remove every network
+:::
 
+::: {#debug .section .section}
 ## 🔍 Debugging & Troubleshooting
 
 ### Common Debug Workflows
@@ -1003,7 +1037,7 @@ Resource limits prevent one container from hogging the entire machine.
 
 ### Common Issues & Fixes
 
-
+::: table-wrap
   Symptom                           Likely Cause                      Fix
   --------------------------------- --------------------------------- ----------------------------------------------------------
   Container exits immediately       No foreground process             Make sure CMD/ENTRYPOINT is a foreground process
@@ -1014,7 +1048,10 @@ Resource limits prevent one container from hogging the entire machine.
   OOM killed                        Memory limit too low              `docker run --memory="1g"` or check app for memory leaks
   Build is slow                     Bad layer ordering                COPY package.json → RUN install → COPY rest
   Image too large                   No multi-stage build              Use multi-stage builds, alpine base images
+:::
+:::
 
+::: {#dockerignore .section .section}
 ## 📝 .dockerignore --- Exclude Files from Build Context
 
     # .dockerignore — placed next to Dockerfile
@@ -1080,10 +1117,14 @@ Resource limits prevent one container from hogging the entire machine.
     # Use negation (!) to include something excluded above
     !README.md
     !.env.example
+:::
 
+::: {#quickref .section .section}
 ## ⚡ Quick Reference Card
 
-
+::: note
+**Print this section. Stick it on your wall.**
+:::
 
     # ── Images ──────────────────────────────────
     docker pull nginx:latest                # pull image
@@ -1112,3 +1153,12 @@ Resource limits prevent one container from hogging the entire machine.
     docker inspect container_name             # full config
     docker stats                              # resource usage
     docker events                             # event stream
+:::
+
+------------------------------------------------------------------------
+
+Built for Everyone · The only Docker reference you\'ll ever need ·
+[v2.0]{.tag}
+:::
+
+↑
