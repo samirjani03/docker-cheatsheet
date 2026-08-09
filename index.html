@@ -462,7 +462,7 @@ CMD ["node", "dist/server.js"]</code></pre>
   <tr><td><code>ONBUILD</code></td><td>Trigger for child images</td><td><code>ONBUILD COPY . /app</code></td></tr>
   <tr><td><code>STOPSIGNAL</code></td><td>Signal to stop container</td><td><code>STOPSIGNAL SIGTERM</code></td></tr>
   <tr><td><code>SHELL</code></td><td>Change default shell</td><td><code>SHELL ["/bin/bash", "-c"]</code></td></tr>
-  <tr><td><code>LABEL</code></td><td>Add metadata</td><td><code>LABEL maintainer="samir@example.com"</code></td></tr>
+  <tr><td><code>LABEL</code></td><td>Add metadata</td><td><code>LABEL maintainer="user@example.com"</code></td></tr>
 </table>
 </div>
 
@@ -534,8 +534,8 @@ docker build -f Dockerfile.prod -t myapp:prod .
 docker build --no-cache -t myapp:latest .
 
 <span class="hl-cmt"># Build and tag for registry</span>
-docker build -t samir/myapp:v1.0 .
-docker build -t ghcr.io/samir/myapp:v1.0 .        <span class="hl-cmt"># GitHub Container Registry</span></code></pre>
+docker build -t user/myapp:v1.0 .
+docker build -t ghcr.io/user/myapp:v1.0 .        <span class="hl-cmt"># GitHub Container Registry</span></code></pre>
 
 <h3>Listing & Inspecting</h3>
 <pre><code>docker images                                      <span class="hl-cmt"># list all images</span>
@@ -552,8 +552,8 @@ docker history --no-trunc nginx:latest             <span class="hl-cmt"># full c
 
 <h3>Tagging & Renaming</h3>
 <pre><code>docker tag SOURCE_IMAGE[:TAG] TARGET_IMAGE[:TAG]
-docker tag myapp:latest samir/myapp:v1.0
-docker tag abc123 samir/myapp:latest               <span class="hl-cmt"># tag by image ID</span></code></pre>
+docker tag myapp:latest user/myapp:v1.0
+docker tag abc123 user/myapp:latest               <span class="hl-cmt"># tag by image ID</span></code></pre>
 
 <h3>Removing Images</h3>
 <pre><code>docker rmi nginx:latest                            <span class="hl-cmt"># remove by name:tag</span>
@@ -573,7 +573,7 @@ docker load < myimage.tar.gz                       <span class="hl-cmt"># import
 
 <h3>Commit (create image from container)</h3>
 <pre><code>docker commit mycontainer myimage:v2               <span class="hl-cmt"># snapshot container → image</span>
-docker commit -m "added nginx config" -a "Samir" mycontainer myimage:v2
+docker commit -m "added nginx config" -a "user" mycontainer myimage:v2
 <span class="hl-cmt"># ⚠️ Prefer Dockerfiles over commit — commits are opaque and unreproducible.</span></code></pre>
 
 <h3>Import/Export (flat filesystem)</h3>
@@ -751,7 +751,7 @@ services:
       dockerfile: Dockerfile.prod
       args:
         - NODE_ENV=production
-    image: samir/frontend:v1.0
+    image: user/frontend:v1.0
     ports:
       - "3000:3000"
     environment:
@@ -963,7 +963,7 @@ docker volume prune --filter "label!=keep"</code></pre>
 docker run -v mydata:/app/data myapp
 
 <span class="hl-cmt"># Bind mount (you pick the host path)</span>
-docker run -v /home/samir/project:/app myapp
+docker run -v /home/user/project:/app myapp
 docker run -v $(pwd):/app myapp                    <span class="hl-cmt"># current directory</span>
 docker run -v /host/config:/app/config:ro myapp    <span class="hl-cmt"># read-only bind mount</span>
 
@@ -1042,7 +1042,7 @@ docker exec web ping db                             <span class="hl-cmt"># ← r
 <h3>Docker Hub</h3>
 <pre><code><span class="hl-cmt"># ── Login/Logout ──</span>
 docker login                                        <span class="hl-cmt"># interactive</span>
-docker login -u samir                               <span class="hl-cmt"># specify username</span>
+docker login -u user                               <span class="hl-cmt"># specify username</span>
 docker login --password-stdin < password.txt        <span class="hl-cmt"># CI/CD (stdin)</span>
 docker logout
 
@@ -1051,11 +1051,11 @@ docker pull nginx:latest
 docker pull ubuntu:22.04                            <span class="hl-cmt"># specific version</span>
 docker pull python:3.12-slim                        <span class="hl-cmt"># slim variant</span>
 docker pull alpine                                  <span class="hl-cmt"># :latest is default</span>
-docker pull --all-tags samir/myapp                  <span class="hl-cmt"># pull all tags</span>
+docker pull --all-tags user/myapp                  <span class="hl-cmt"># pull all tags</span>
 docker pull --platform linux/amd64 nginx            <span class="hl-cmt"># specific architecture</span>
 
-docker push samir/myapp:v1.0
-docker push --all-tags samir/myapp                  <span class="hl-cmt"># push all local tags</span>
+docker push user/myapp:v1.0
+docker push --all-tags user/myapp                  <span class="hl-cmt"># push all local tags</span>
 
 <span class="hl-cmt"># ── Search ──</span>
 docker search nginx
@@ -1065,9 +1065,9 @@ docker search --filter stars=100 node</code></pre>
 
 <h3>Other Registries</h3>
 <pre><code><span class="hl-cmt"># ── GitHub Container Registry (ghcr.io) ──</span>
-echo $CR_PAT | docker login ghcr.io -u samir --password-stdin
-docker tag myapp ghcr.io/samir/myapp:v1.0
-docker push ghcr.io/samir/myapp:v1.0
+echo $CR_PAT | docker login ghcr.io -u user --password-stdin
+docker tag myapp ghcr.io/user/myapp:v1.0
+docker push ghcr.io/user/myapp:v1.0
 
 <span class="hl-cmt"># ── AWS ECR ──</span>
 aws ecr get-login-password --region us-east-1 | \
@@ -1144,20 +1144,20 @@ docker buildx inspect mybuilder
 docker buildx use mybuilder
 
 <span class="hl-cmt"># ── Multi-platform build ──</span>
-docker buildx build --platform linux/amd64,linux/arm64 -t samir/myapp:latest .
-docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t samir/myapp:v1.0 .
+docker buildx build --platform linux/amd64,linux/arm64 -t user/myapp:latest .
+docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t user/myapp:v1.0 .
 
 <span class="hl-cmt"># ── Build + Push (all-in-one) ──</span>
 docker buildx build --platform linux/amd64,linux/arm64 \
-  -t samir/myapp:latest --push .
+  -t user/myapp:latest --push .
 
 <span class="hl-cmt"># ── Build without pushing ──</span>
 docker buildx build --platform linux/amd64,linux/arm64 \
-  -t samir/myapp:latest -o type=docker .            <span class="hl-cmt"># load into local docker</span>
+  -t user/myapp:latest -o type=docker .            <span class="hl-cmt"># load into local docker</span>
 
 <span class="hl-cmt"># ── Cache ──</span>
-docker buildx build --cache-to type=registry,ref=samir/myapp:cache \
-  --cache-from type=registry,ref=samir/myapp:cache -t samir/myapp:latest .
+docker buildx build --cache-to type=registry,ref=user/myapp:cache \
+  --cache-from type=registry,ref=user/myapp:cache -t user/myapp:latest .
 
 <span class="hl-cmt"># ── Cleanup ──</span>
 docker buildx rm mybuilder
@@ -1405,7 +1405,7 @@ docker events                             <span class="hl-cmt"># event stream</s
 
 <hr>
 <p style="text-align:center;color:var(--text2);padding:20px 0;font-size:.85rem;">
-  Built for Samir · The only Docker reference you'll ever need · <span class="tag">v2.0</span>
+  Built for Everyone · The only Docker reference you'll ever need · <span class="tag">v2.0</span>
 </p>
 </main>
 
